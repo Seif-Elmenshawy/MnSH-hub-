@@ -4,6 +4,10 @@ use lopdf::content::{Content, Operation};
 use lopdf::{Document, Object, ObjectId, Stream, Bookmark};
 use std::path::Path;
 use colored::*;
+use std::process::{Command, Output};
+use std::path::PathBuf;
+use dirs;
+
 
 pub fn merge_pdf(path1: String, path2: String) -> Result<(), Box<dyn std::error::Error>>{
     let p1 = Path::new(&path1);
@@ -200,4 +204,58 @@ pub fn merge_pdf(path1: String, path2: String) -> Result<(), Box<dyn std::error:
     }
 
     Ok(())
+}
+
+fn downloads_dir() -> anyhow::Result<PathBuf> {
+    let path = dirs::download_dir()
+        .ok_or_else(|| anyhow::anyhow!("Could not find Downloads folder"))?;
+    Ok(path)
+}
+
+pub fn convert_pdf (path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let outdir = downloads_dir()?;
+    let args = [
+        "--headless",
+        "--infilter=writer_pdf_import",  // writer not impress
+        "--convert-to", "odt",
+        "--outdir", outdir.to_str().unwrap(),
+        path.to_str().unwrap()
+    ];
+
+    let out = Command::new("libreoffice").args(args).output()?;
+
+
+    if !out.status.success() {
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        return Err(format!("LibreOffice failed: {}", stderr).into());
+    }
+
+    let odt_path = outdir
+        .join(path.file_stem().unwrap())
+        .with_extension("odt");
+
+    let out = Command::new("libreoffice")
+        .args([
+            "--headless",
+            "--convert-to", "docx",
+            "--outdir", outdir.to_str().unwrap(),
+            odt_path.to_str().unwrap(),
+        ])
+        .output()?;
+
+    if !out.status.success() {
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        return Err(format!("LibreOffice step 2 failed: {}", stderr).into());
+    }
+
+    // Clean up the intermediate ODT file
+    std::fs::remove_file(&odt_path)?;
+
+    let output = outdir
+        .join(path.file_stem().unwrap())
+        .with_extension("docx");
+
+    println!("Done! The file is saved to {}", output.display().to_string().green());
+    Ok(())
+
 }

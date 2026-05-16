@@ -1,6 +1,6 @@
 mod commands;
 use clap::{Parser, Subcommand};
-
+use std::path::Path;
 
 
 
@@ -92,7 +92,8 @@ enum DOCXCommands {
 enum IMGCommands {
     #[command(about = "Convert to any other image type")]
     Convert{
-        path:String
+        path:String,
+        output: String
     },
     #[command(about = "Remove the background from any image")]
     RemoveBG{
@@ -115,7 +116,7 @@ enum DownloaderCommands {
     #[command(about = "Download Videos in mp4 at any quality u wanat")]
     Mp4 {
         link:String,
-        quality:u32
+        resolution:u32
     }
 }
 
@@ -139,21 +140,21 @@ fn main() {
                 },
                 FileCommands::Img { command } =>{
                     match command {
-                        IMGCommands::Convert { path } => {},
+                        IMGCommands::Convert { path , output} => {commands::img::convert(path, output).unwrap()},
                         IMGCommands::RemoveBG { path } => {},
                         IMGCommands::Resize { path, width, height } => {}
                     }
                 },
                 FileCommands::Pdfs { command } => {
                     match command {
-                        PDFCommands::Convert { path } => {},
+                        PDFCommands::Convert { path } => {commands::files::convert_pdf(Path::new(&path)).unwrap()},
                         PDFCommands::Merge { path1, path2 } => {commands::files::merge_pdf(path1, path2).unwrap()},
                         PDFCommands::Split { path } => {}
                     }
                 }
             }
         },
-        Commands::QrCodeCreator { link } => {},
+        Commands::QrCodeCreator { link } => {commands::qr::qr_creator(link).unwrap()},
         Commands::RepositoryDownloader { link } => {},
         Commands::YoutubeDownloader { command } => {}
     }
