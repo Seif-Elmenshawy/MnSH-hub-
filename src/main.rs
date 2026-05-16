@@ -1,4 +1,8 @@
+mod commands;
 use clap::{Parser, Subcommand};
+
+
+
 
 #[derive(Parser, Debug)]
 #[command(version,
@@ -58,7 +62,8 @@ enum PDFCommands {
     },
     #[command(about = "Merge PDF files")]
     Merge{
-        path:String
+        path1:String,
+        path2:String
     },
     #[command(about = "Split PDF files")]
     Split{
@@ -74,7 +79,8 @@ enum DOCXCommands {
     },
     #[command(about = "Merge DOCX files")]
     Merge{
-        path:String
+        path1:String,
+        path2:String
     },
     #[command(about = "Split DOCX files")]
     Split{
@@ -91,6 +97,12 @@ enum IMGCommands {
     #[command(about = "Remove the background from any image")]
     RemoveBG{
         path:String
+    },
+    #[command(about = "Resize any image")]
+    Resize{
+        path: String,
+        width: u32,
+        height: u32
     }
 }
 
@@ -113,6 +125,36 @@ enum DownloaderCommands {
 fn main() {
     let cli = Cli::parse();
 
-    println!("{:?}", cli)
-
+    println!("{:?}", cli);
+    
+    match cli.command {
+        Commands::Files { command } => {
+            match command{
+                FileCommands::Docx { command } => {
+                    match command {
+                        DOCXCommands::Convert { path } => {},
+                        DOCXCommands::Merge { path1, path2 } => {},
+                        DOCXCommands::Split { path } => {}
+                    }
+                },
+                FileCommands::Img { command } =>{
+                    match command {
+                        IMGCommands::Convert { path } => {},
+                        IMGCommands::RemoveBG { path } => {},
+                        IMGCommands::Resize { path, width, height } => {}
+                    }
+                },
+                FileCommands::Pdfs { command } => {
+                    match command {
+                        PDFCommands::Convert { path } => {},
+                        PDFCommands::Merge { path1, path2 } => {commands::files::merge_pdf(path1, path2).unwrap()},
+                        PDFCommands::Split { path } => {}
+                    }
+                }
+            }
+        },
+        Commands::QrCodeCreator { link } => {},
+        Commands::RepositoryDownloader { link } => {},
+        Commands::YoutubeDownloader { command } => {}
+    }
 }
