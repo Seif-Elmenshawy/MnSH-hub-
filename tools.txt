@@ -1,0 +1,4 @@
+files > {PDFS, DOCS, etc} > {convert, split, merge} 
+utube downloader > {mp3, mp4 > {quality}}
+qrcode creator > exporter
+repository downloader
