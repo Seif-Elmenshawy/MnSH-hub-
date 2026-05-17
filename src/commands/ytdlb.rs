@@ -1,5 +1,7 @@
 use std::process::Command;
 
+use colored::Colorize;
+
 
 
 
@@ -16,12 +18,19 @@ pub fn mp4_dlp(link: String, resolution: u32) {
     Command::new("yt-dlp").args(args);
 }
 
-pub fn mp3_dlp(link:String){
+pub fn mp3_dlp(link:String) -> Result<(), Box<dyn std::error::Error>>{
     let args = [
         "-x",
         "--audio-format",
         "mp3",
         &link
     ];
-    Command::new("yt-dlp").args(args);
+    let out = Command::new("yt-dlp").args(args).output()?;
+
+    if !out.status.success() {
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        return Err(format!("LibreOffice failed: {}", stderr).into());
+    }
+    println!("{}", "Done".green());
+    Ok(())
 }

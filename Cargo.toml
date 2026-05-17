@@ -16,3 +16,11 @@ pdf-docx = "1.0.0-beta.6"
 qrcode = "0.14.1"
 tempfile = "3.27.0"
 walkdir = "2.5.0"
+
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = [
+    "stream",
+    "json"
+] }
+futures-util = "0.3"
+zip-extract = "0.2"

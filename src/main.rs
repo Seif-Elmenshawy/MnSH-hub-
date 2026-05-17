@@ -31,7 +31,8 @@ enum Commands{
     },
     #[command(about = "Download any repository you want")]
     RepositoryDownloader{
-        link: String
+        link: String,
+        branch: String
     }
 }
 
@@ -123,7 +124,8 @@ enum DownloaderCommands {
 
 
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     println!("{:?}", cli);
@@ -155,7 +157,14 @@ fn main() {
             }
         },
         Commands::QrCodeCreator { link } => {commands::qr::qr_creator(link).unwrap()},
-        Commands::RepositoryDownloader { link } => {},
-        Commands::YoutubeDownloader { command } => {}
+        Commands::RepositoryDownloader { link, branch } => {commands::repo::repo_downloader(link, branch).await.unwrap()},
+        Commands::YoutubeDownloader { command } => {
+            match command{
+                DownloaderCommands::Mp3 { link } => {commands::ytdlb::mp3_dlp(link);}
+                DownloaderCommands::Mp4 { link, resolution } => {commands::ytdlb::mp4_dlp(link, resolution);}
+            }
+        }
     }
+
+    Ok(())
 }
