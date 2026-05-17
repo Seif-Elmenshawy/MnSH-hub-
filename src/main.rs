@@ -133,7 +133,7 @@ fn main() {
             match command{
                 FileCommands::Docx { command } => {
                     match command {
-                        DOCXCommands::Convert { path } => {},
+                        DOCXCommands::Convert { path } => {commands::files::convert_docx(Path::new(&path)).unwrap()},
                         DOCXCommands::Merge { path1, path2 } => {},
                         DOCXCommands::Split { path } => {}
                     }

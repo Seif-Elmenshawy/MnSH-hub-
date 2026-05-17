@@ -259,3 +259,51 @@ pub fn convert_pdf (path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 
 }
+
+
+pub fn convert_docx(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+        let outdir = downloads_dir()?;
+    let args = [
+        "--headless",
+        "--infilter=writer_docx_import",  // writer not impress
+        "--convert-to", "odt",
+        "--outdir", outdir.to_str().unwrap(),
+        path.to_str().unwrap()
+    ];
+
+    let out = Command::new("libreoffice").args(args).output()?;
+
+
+    if !out.status.success() {
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        return Err(format!("LibreOffice failed: {}", stderr).into());
+    }
+
+    let odt_path = outdir
+        .join(path.file_stem().unwrap())
+        .with_extension("odt");
+
+    let out = Command::new("libreoffice")
+        .args([
+            "--headless",
+            "--convert-to", "pdf",
+            "--outdir", outdir.to_str().unwrap(),
+            odt_path.to_str().unwrap(),
+        ])
+        .output()?;
+
+    if !out.status.success() {
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        return Err(format!("LibreOffice step 2 failed: {}", stderr).into());
+    }
+
+    // Clean up the intermediate ODT file
+    std::fs::remove_file(&odt_path)?;
+
+    let output = outdir
+        .join(path.file_stem().unwrap())
+        .with_extension("pdf");
+
+    println!("Done! The file is saved to {}", output.display().to_string().green());
+    Ok(())
+}
